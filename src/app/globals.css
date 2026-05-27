@@ -128,3 +128,85 @@
     @apply font-sans;
   }
 }
+
+/* ─── Accent color presets ─────────────────────────────────────────── */
+
+/* Rose */
+:root[data-accent="rose"] {
+  --primary: oklch(0.645 0.201 14.7);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.645 0.201 14.7);
+  --sidebar-primary: oklch(0.645 0.201 14.7);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+}
+.dark[data-accent="rose"] {
+  --primary: oklch(0.72 0.18 14.7);
+  --primary-foreground: oklch(0.1 0 0);
+  --ring: oklch(0.72 0.18 14.7);
+  --sidebar-primary: oklch(0.72 0.18 14.7);
+  --sidebar-primary-foreground: oklch(0.1 0 0);
+}
+
+/* Violet */
+:root[data-accent="violet"] {
+  --primary: oklch(0.512 0.25 275);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.512 0.25 275);
+  --sidebar-primary: oklch(0.512 0.25 275);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+}
+.dark[data-accent="violet"] {
+  --primary: oklch(0.65 0.22 275);
+  --primary-foreground: oklch(0.1 0 0);
+  --ring: oklch(0.65 0.22 275);
+  --sidebar-primary: oklch(0.65 0.22 275);
+  --sidebar-primary-foreground: oklch(0.1 0 0);
+}
+
+/* Blue */
+:root[data-accent="blue"] {
+  --primary: oklch(0.546 0.185 264.4);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.546 0.185 264.4);
+  --sidebar-primary: oklch(0.546 0.185 264.4);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+}
+.dark[data-accent="blue"] {
+  --primary: oklch(0.67 0.17 264.4);
+  --primary-foreground: oklch(0.1 0 0);
+  --ring: oklch(0.67 0.17 264.4);
+  --sidebar-primary: oklch(0.67 0.17 264.4);
+  --sidebar-primary-foreground: oklch(0.1 0 0);
+}
+
+/* Green */
+:root[data-accent="green"] {
+  --primary: oklch(0.5 0.15 142.5);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.5 0.15 142.5);
+  --sidebar-primary: oklch(0.5 0.15 142.5);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+}
+.dark[data-accent="green"] {
+  --primary: oklch(0.62 0.13 142.5);
+  --primary-foreground: oklch(0.1 0 0);
+  --ring: oklch(0.62 0.13 142.5);
+  --sidebar-primary: oklch(0.62 0.13 142.5);
+  --sidebar-primary-foreground: oklch(0.1 0 0);
+}
+
+/* Orange */
+:root[data-accent="orange"] {
+  --primary: oklch(0.6 0.2 49.5);
+  --primary-foreground: oklch(0.985 0 0);
+  --ring: oklch(0.6 0.2 49.5);
+  --sidebar-primary: oklch(0.6 0.2 49.5);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+}
+.dark[data-accent="orange"] {
+  --primary: oklch(0.72 0.17 49.5);
+  --primary-foreground: oklch(0.1 0 0);
+  --ring: oklch(0.72 0.17 49.5);
+  --sidebar-primary: oklch(0.72 0.17 49.5);
+  --sidebar-primary-foreground: oklch(0.1 0 0);
+}

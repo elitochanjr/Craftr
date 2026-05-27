@@ -10,10 +10,12 @@ declare module "next-auth" {
     user: {
       id: string;
       role: Role;
+      accentColor?: string | null;
     } & DefaultSession["user"];
   }
   interface User {
     role: Role;
+    accentColor?: string | null;
   }
 }
 
@@ -21,6 +23,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: Role;
+    accentColor?: string | null;
   }
 }
 
@@ -54,6 +57,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name ?? undefined,
           image: user.image ?? undefined,
           role: user.role,
+          accentColor: user.accentColor,
         };
       },
     }),
@@ -63,12 +67,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id as string;
         token.role = (user as User).role;
+        token.accentColor = (user as User).accentColor;
       }
       return token;
     },
     session({ session, token }) {
       session.user.id = token.id;
       session.user.role = token.role;
+      session.user.accentColor = token.accentColor;
       return session;
     },
   },
