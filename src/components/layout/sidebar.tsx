@@ -11,8 +11,11 @@ import {
   Truck,
   BarChart2,
   Settings,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { signOutAction } from "@/lib/auth-actions";
+import { Button } from "@/components/ui/button";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -31,9 +34,7 @@ export function Sidebar() {
     <aside className="hidden lg:flex flex-col w-56 shrink-0 border-r border-border bg-background h-screen sticky top-0">
       {/* Logo */}
       <div className="flex items-center h-14 px-4 border-b border-border">
-        <span className="font-semibold text-lg tracking-tight">
-          ✂️ Craftr
-        </span>
+        <span className="font-semibold text-lg tracking-tight">✂️ Craftr</span>
       </div>
 
       {/* Nav items */}
@@ -59,8 +60,8 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Settings link at bottom */}
-      <div className="p-2 border-t border-border">
+      {/* Bottom: Settings + Sign out */}
+      <div className="p-2 border-t border-border space-y-0.5">
         <Link
           href="/settings"
           className={cn(
@@ -73,6 +74,16 @@ export function Sidebar() {
           <Settings className="h-4 w-4 shrink-0" />
           Settings
         </Link>
+        <form action={signOutAction}>
+          <Button
+            type="submit"
+            variant="ghost"
+            className="w-full justify-start gap-3 px-3 py-2 h-auto text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            Sign out
+          </Button>
+        </form>
       </div>
     </aside>
   );
