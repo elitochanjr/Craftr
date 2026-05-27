@@ -6,14 +6,35 @@ import { ProjectsView } from "@/components/projects/projects-view";
 export default async function ProjectsPage() {
   await requireAuth();
 
-  const projects = await prisma.project.findMany({
-    orderBy: { startDate: "desc" },
-  });
+  const [projects, items] = await Promise.all([
+    prisma.project.findMany({
+      orderBy: { startDate: "desc" },
+      include: {
+        stockMovements: {
+          where: { type: "USAGE" },
+          select: { quantity: true, unitCost: true },
+        },
+      },
+    }),
+    prisma.item.findMany({
+      select: { id: true, name: true, unit: true, cost: true, quantity: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+
+  const projectsWithCost = projects.map((p) => ({
+    ...p,
+    totalSupplyCost: p.stockMovements.reduce(
+      (sum, m) => sum + Math.abs(m.quantity) * (m.unitCost ?? 0),
+      0
+    ),
+    stockMovements: undefined,
+  }));
 
   return (
     <>
       <Header title="Projects" />
-      <ProjectsView projects={projects} />
+      <ProjectsView projects={projectsWithCost} items={items} />
     </>
   );
 }

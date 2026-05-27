@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import type { Customer } from "@/generated/prisma/client";
 import {
   createCustomerAction,
   updateCustomerAction,
@@ -26,12 +25,23 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Users, Mail, Phone } from "lucide-react";
+import { Plus, Pencil, Trash2, Users, Mail, Phone, ShoppingBag } from "lucide-react";
+
+type CustomerWithStats = {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  orderCount: number;
+  totalRevenue: number;
+};
 
 const EMPTY: CustomerInput = { name: "", email: "", phone: "" };
 
 interface CustomersViewProps {
-  customers: Customer[];
+  customers: CustomerWithStats[];
 }
 
 export function CustomersView({ customers }: CustomersViewProps) {
@@ -39,24 +49,34 @@ export function CustomersView({ customers }: CustomersViewProps) {
   const [error, setError] = useState<string | null>(null);
 
   const [sheetOpen, setSheetOpen] = useState(false);
-  const [editTarget, setEditTarget] = useState<Customer | null>(null);
+  const [editTarget, setEditTarget] = useState<CustomerWithStats | null>(null);
+  const [viewTarget, setViewTarget] = useState<CustomerWithStats | null>(null);
   const [form, setForm] = useState<CustomerInput>(EMPTY);
 
-  const [deleteTarget, setDeleteTarget] = useState<Customer | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<CustomerWithStats | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   function openCreate() {
     setEditTarget(null);
+    setViewTarget(null);
     setForm(EMPTY);
     setError(null);
     setSheetOpen(true);
   }
 
-  function openEdit(c: Customer) {
-    setEditTarget(c);
+  function openView(c: CustomerWithStats) {
+    setViewTarget(c);
+    setEditTarget(null);
     setForm({ name: c.name, email: c.email ?? "", phone: c.phone ?? "" });
     setError(null);
     setSheetOpen(true);
+  }
+
+  function openEdit(c: CustomerWithStats) {
+    setEditTarget(c);
+    setViewTarget(null);
+    setForm({ name: c.name, email: c.email ?? "", phone: c.phone ?? "" });
+    setError(null);
   }
 
   function handleSave() {
@@ -76,13 +96,19 @@ export function CustomersView({ customers }: CustomersViewProps) {
     startTransition(async () => {
       const res = await deleteCustomerAction(deleteTarget.id);
       if (res.error) setDeleteError(res.error);
-      else setDeleteTarget(null);
+      else {
+        setDeleteTarget(null);
+        setSheetOpen(false);
+      }
     });
   }
 
   function field(key: keyof CustomerInput, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
   }
+
+  const isEditing = !!editTarget;
+  const isViewing = !!viewTarget && !isEditing;
 
   return (
     <div className="p-6">
@@ -113,7 +139,8 @@ export function CustomersView({ customers }: CustomersViewProps) {
             {customers.map((c) => (
               <div
                 key={c.id}
-                className="flex items-start justify-between px-4 py-3.5 hover:bg-muted/50 transition-colors"
+                className="flex items-start justify-between px-4 py-3.5 hover:bg-muted/50 transition-colors cursor-pointer"
+                onClick={() => openView(c)}
               >
                 <div className="space-y-0.5 min-w-0">
                   <p className="text-sm font-medium truncate">{c.name}</p>
@@ -130,27 +157,14 @@ export function CustomersView({ customers }: CustomersViewProps) {
                         {c.phone}
                       </span>
                     )}
+                    {c.orderCount > 0 && (
+                      <span className="flex items-center gap-1">
+                        <ShoppingBag className="h-3 w-3" />
+                        {c.orderCount} order{c.orderCount !== 1 ? "s" : ""} ·{" "}
+                        ${c.totalRevenue.toFixed(2)}
+                      </span>
+                    )}
                   </div>
-                </div>
-                <div className="flex gap-1 ml-2 shrink-0">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => openEdit(c)}
-                  >
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-destructive hover:text-destructive"
-                    onClick={() => {
-                      setDeleteTarget(c);
-                      setDeleteError(null);
-                    }}
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
                 </div>
               </div>
             ))}
@@ -163,61 +177,136 @@ export function CustomersView({ customers }: CustomersViewProps) {
         <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
           <SheetHeader>
             <SheetTitle>
-              {editTarget ? "Edit customer" : "Add customer"}
+              {isViewing
+                ? viewTarget?.name
+                : editTarget
+                ? "Edit customer"
+                : "Add customer"}
             </SheetTitle>
           </SheetHeader>
-          <div className="px-4 py-4 space-y-4 flex-1">
-            {error && (
-              <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                {error}
+
+          {/* View mode */}
+          {isViewing && viewTarget ? (
+            <>
+              <div className="px-4 py-4 space-y-4">
+                <dl className="space-y-3 text-sm">
+                  {viewTarget.email && (
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Email</dt>
+                      <dd className="font-medium">{viewTarget.email}</dd>
+                    </div>
+                  )}
+                  {viewTarget.phone && (
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Phone</dt>
+                      <dd className="font-medium">{viewTarget.phone}</dd>
+                    </div>
+                  )}
+                </dl>
+
+                {/* Order summary */}
+                <div className="rounded-lg border border-border p-4 space-y-2">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Order summary
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Orders</p>
+                      <p className="font-semibold text-lg">
+                        {viewTarget.orderCount}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">
+                        Total revenue
+                      </p>
+                      <p className="font-semibold text-lg">
+                        ${viewTarget.totalRevenue.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
-            )}
-            <div className="space-y-1.5">
-              <Label htmlFor="c-name">Name *</Label>
-              <Input
-                id="c-name"
-                value={form.name}
-                onChange={(e) => field("name", e.target.value)}
-                placeholder="Jane Smith"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="c-email">Email</Label>
-              <Input
-                id="c-email"
-                type="email"
-                value={form.email}
-                onChange={(e) => field("email", e.target.value)}
-                placeholder="jane@example.com"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="c-phone">Phone</Label>
-              <Input
-                id="c-phone"
-                type="tel"
-                value={form.phone}
-                onChange={(e) => field("phone", e.target.value)}
-                placeholder="+1 555 000 0000"
-              />
-            </div>
-          </div>
-          <SheetFooter>
-            <Button
-              variant="outline"
-              onClick={() => setSheetOpen(false)}
-              className="flex-1"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSave}
-              disabled={!form.name.trim()}
-              className="flex-1"
-            >
-              {editTarget ? "Save changes" : "Add customer"}
-            </Button>
-          </SheetFooter>
+              <SheetFooter className="gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 text-destructive hover:text-destructive gap-1.5"
+                  onClick={() => {
+                    setDeleteTarget(viewTarget);
+                    setDeleteError(null);
+                  }}
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete
+                </Button>
+                <Button
+                  className="flex-1 gap-1.5"
+                  onClick={() => openEdit(viewTarget)}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                  Edit
+                </Button>
+              </SheetFooter>
+            </>
+          ) : (
+            /* Create / Edit form */
+            <>
+              <div className="px-4 py-4 space-y-4 flex-1">
+                {error && (
+                  <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                    {error}
+                  </div>
+                )}
+                <div className="space-y-1.5">
+                  <Label htmlFor="c-name">Name *</Label>
+                  <Input
+                    id="c-name"
+                    value={form.name}
+                    onChange={(e) => field("name", e.target.value)}
+                    placeholder="Jane Smith"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="c-email">Email</Label>
+                  <Input
+                    id="c-email"
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => field("email", e.target.value)}
+                    placeholder="jane@example.com"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="c-phone">Phone</Label>
+                  <Input
+                    id="c-phone"
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) => field("phone", e.target.value)}
+                    placeholder="+1 555 000 0000"
+                  />
+                </div>
+              </div>
+              <SheetFooter>
+                <Button
+                  variant="outline"
+                  onClick={() =>
+                    editTarget ? openView(editTarget) : setSheetOpen(false)
+                  }
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSave}
+                  disabled={!form.name.trim()}
+                  className="flex-1"
+                >
+                  {editTarget ? "Save changes" : "Add customer"}
+                </Button>
+              </SheetFooter>
+            </>
+          )}
         </SheetContent>
       </Sheet>
 
