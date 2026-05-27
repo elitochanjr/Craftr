@@ -1,0 +1,262 @@
+// Craftr — Prisma Schema
+// All domain models defined up-front so future slices only add server actions and UI.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// Auth.js v5 required models
+// ─────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  STAFF
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  // Custom fields
+  role          Role      @default(STAFF)
+  hashedPassword String?
+  accentColor   String?   // hex or CSS var name
+  active        Boolean   @default(true)
+
+  accounts      Account[]
+  sessions      Session[]
+  notifications Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// ─────────────────────────────────────────────
+// Invitations
+// ─────────────────────────────────────────────
+
+model Invitation {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  role      Role     @default(STAFF)
+  token     String   @unique @default(cuid())
+  expiresAt DateTime
+  accepted  Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────
+// Inventory
+// ─────────────────────────────────────────────
+
+model Category {
+  id    String @id @default(cuid())
+  name  String @unique
+
+  items Item[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Supplier {
+  id           String  @id @default(cuid())
+  name         String
+  website      String?
+  contactEmail String?
+  contactPhone String?
+  notes        String?
+
+  items Item[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Item {
+  id                String   @id @default(cuid())
+  name              String
+  quantity          Float    @default(0)
+  unit              String   @default("unit")
+  lowStockThreshold Float    @default(5)
+  cost              Float    @default(0)   // cost per unit
+  location          String?
+  photoUrl          String?
+  notes             String?
+  sku               String?  // nice-to-have v2, nullable
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  supplierId String?
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+
+  stockMovements StockMovement[]
+  notifications  Notification[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Stock Movements (the inventory ledger)
+// ─────────────────────────────────────────────
+
+enum MovementType {
+  PURCHASE
+  USAGE
+  ADJUSTMENT
+}
+
+model StockMovement {
+  id         String       @id @default(cuid())
+  type       MovementType
+  quantity   Float        // positive = stock in, negative = stock out
+  date       DateTime     @default(now())
+  unitCost   Float?       // cost per unit at time of movement
+  vendorName String?      // for PURCHASE type
+  note       String?      // for ADJUSTMENT type or general notes
+
+  itemId String
+  item   Item   @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  orderId String?
+  order   Order?  @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────
+// Customers
+// ─────────────────────────────────────────────
+
+model Customer {
+  id    String  @id @default(cuid())
+  name  String
+  email String?
+  phone String?
+
+  orders Order[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Orders (customer fulfillment)
+// ─────────────────────────────────────────────
+
+enum OrderStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+model Order {
+  id      String      @id @default(cuid())
+  status  OrderStatus @default(ACTIVE)
+  revenue Float?
+  date    DateTime    @default(now())
+  notes   String?
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+
+  stockMovements StockMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Projects (hobby / personal work)
+// ─────────────────────────────────────────────
+
+enum ProjectStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Project {
+  id        String        @id @default(cuid())
+  name      String
+  status    ProjectStatus @default(IN_PROGRESS)
+  startDate DateTime      @default(now())
+  endDate   DateTime?
+  notes     String?
+
+  stockMovements StockMovement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Notifications
+// ─────────────────────────────────────────────
+
+enum NotificationType {
+  LOW_STOCK
+  SYSTEM
+}
+
+model Notification {
+  id      String           @id @default(cuid())
+  message String
+  type    NotificationType @default(LOW_STOCK)
+  read    Boolean          @default(false)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  itemId String?
+  item   Item?   @relation(fields: [itemId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+}
