@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
+import withPWAInit from "@ducanh2912/next-pwa";
 
-const nextConfig: NextConfig = {
-  /* config options here */
-};
+const withPWA = withPWAInit({
+  dest: "public",
+  // Only register service worker in production
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  reloadOnOnline: true,
+});
 
-export default nextConfig;
+const nextConfig: NextConfig = {};
+
+export default withPWA(nextConfig);
