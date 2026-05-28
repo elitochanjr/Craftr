@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdmin, requireAuth } from "@/lib/auth-helpers";
 import { revalidatePath } from "next/cache";
+import { maybeNotifyLowStock } from "@/lib/notifications";
 
 // ── Purchase (stock in) ────────────────────────────────────────────────────
 
@@ -61,7 +62,7 @@ export async function logUsageAction(input: UsageInput) {
   // Guard: would go negative?
   const item = await prisma.item.findUnique({
     where: { id: input.itemId },
-    select: { quantity: true, name: true },
+    select: { quantity: true, name: true, lowStockThreshold: true },
   });
   if (!item) return { error: "Item not found." };
   if (item.quantity - input.quantity < 0) {
@@ -88,6 +89,16 @@ export async function logUsageAction(input: UsageInput) {
     });
   });
 
+  // Fire low-stock notification if this event crossed the threshold
+  const newQty = item.quantity - input.quantity;
+  await maybeNotifyLowStock(
+    input.itemId,
+    item.name,
+    item.quantity,
+    newQty,
+    item.lowStockThreshold
+  );
+
   revalidatePath("/inventory");
   revalidatePath("/orders");
   revalidatePath("/projects");
@@ -109,18 +120,14 @@ export async function logAdjustmentAction(input: AdjustmentInput) {
   if (input.delta === 0)
     return { error: "Delta cannot be zero." };
 
-  // Guard: would go negative?
-  if (input.delta < 0) {
-    const item = await prisma.item.findUnique({
-      where: { id: input.itemId },
-      select: { quantity: true },
-    });
-    if (!item) return { error: "Item not found." };
-    if (item.quantity + input.delta < 0) {
-      return {
-        error: `Adjustment would bring quantity below zero.`,
-      };
-    }
+  const item = await prisma.item.findUnique({
+    where: { id: input.itemId },
+    select: { quantity: true, name: true, lowStockThreshold: true },
+  });
+  if (!item) return { error: "Item not found." };
+
+  if (input.delta < 0 && item.quantity + input.delta < 0) {
+    return { error: `Adjustment would bring quantity below zero.` };
   }
 
   await prisma.$transaction(async (tx) => {
@@ -137,6 +144,18 @@ export async function logAdjustmentAction(input: AdjustmentInput) {
       data: { quantity: { increment: input.delta } },
     });
   });
+
+  // Fire low-stock notification if a downward adjustment crossed the threshold
+  if (input.delta < 0) {
+    const newQty = item.quantity + input.delta;
+    await maybeNotifyLowStock(
+      input.itemId,
+      item.name,
+      item.quantity,
+      newQty,
+      item.lowStockThreshold
+    );
+  }
 
   revalidatePath("/inventory");
   return { success: true };

@@ -153,11 +153,22 @@ export function InventoryView({
   const [movementRefreshKey, setMovementRefreshKey] = useState(0);
 
   // Pre-apply ?location= query param (from scanned QR code)
+  // Pre-apply ?item= query param (from notification click)
   const searchParams = useSearchParams();
   useEffect(() => {
     const loc = searchParams.get("location");
     if (loc) setFilterLoc(loc ?? "");
   }, [searchParams]);
+  useEffect(() => {
+    const itemId = searchParams.get("item");
+    if (itemId) {
+      const target = items.find((i) => i.id === itemId);
+      if (target) {
+        setSelected(target);
+        setMode("view");
+      }
+    }
+  }, [searchParams, items]);
 
   // ── Unique locations from items
   const locations = useMemo(
