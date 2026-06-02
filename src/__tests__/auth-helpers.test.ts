@@ -31,21 +31,41 @@ describe("requireAuth", () => {
     expect(mockRedirect).toHaveBeenCalledWith("/sign-in");
   });
 
-  it("returns session when authenticated", async () => {
+  it("returns session when ACTIVE", async () => {
     const session = {
-      user: { id: "u1", email: "admin@test.com", role: "ADMIN" as const },
+      user: { id: "u1", email: "admin@test.com", role: "ADMIN" as const, status: "ACTIVE" as const },
       expires: "2099-01-01",
     };
     mockAuth.mockResolvedValueOnce(session as any);
     const result = await requireAuth();
     expect(result).toEqual(session);
   });
+
+  it("redirects to /pending-approval for PENDING users", async () => {
+    const session = {
+      user: { id: "u3", email: "pending@test.com", role: "STAFF" as const, status: "PENDING" as const },
+      expires: "2099-01-01",
+    };
+    mockAuth.mockResolvedValueOnce(session as any);
+    await expect(requireAuth()).rejects.toThrow("REDIRECT:/pending-approval");
+    expect(mockRedirect).toHaveBeenCalledWith("/pending-approval");
+  });
+
+  it("redirects to /sign-in for INACTIVE users", async () => {
+    const session = {
+      user: { id: "u4", email: "inactive@test.com", role: "STAFF" as const, status: "INACTIVE" as const },
+      expires: "2099-01-01",
+    };
+    mockAuth.mockResolvedValueOnce(session as any);
+    await expect(requireAuth()).rejects.toThrow("REDIRECT:/sign-in");
+    expect(mockRedirect).toHaveBeenCalledWith("/sign-in");
+  });
 });
 
 describe("requireAdmin", () => {
   it("redirects to /403 for STAFF users", async () => {
     const session = {
-      user: { id: "u2", email: "staff@test.com", role: "STAFF" as const },
+      user: { id: "u2", email: "staff@test.com", role: "STAFF" as const, status: "ACTIVE" as const },
       expires: "2099-01-01",
     };
     mockAuth.mockResolvedValueOnce(session as any);
@@ -55,7 +75,7 @@ describe("requireAdmin", () => {
 
   it("returns session for ADMIN users", async () => {
     const session = {
-      user: { id: "u1", email: "admin@test.com", role: "ADMIN" as const },
+      user: { id: "u1", email: "admin@test.com", role: "ADMIN" as const, status: "ACTIVE" as const },
       expires: "2099-01-01",
     };
     mockAuth.mockResolvedValueOnce(session as any);

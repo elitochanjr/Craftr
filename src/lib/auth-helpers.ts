@@ -8,6 +8,8 @@ import { redirect } from "next/navigation";
 export async function requireAuth() {
   const session = await auth();
   if (!session?.user) redirect("/sign-in");
+  if (session.user.status === "PENDING") redirect("/pending-approval");
+  if (session.user.status === "INACTIVE") redirect("/sign-in");
   return session;
 }
 

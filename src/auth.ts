@@ -3,7 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import type { Role } from "@/generated/prisma/client";
+import type { Role, UserStatus } from "@/generated/prisma/client";
 
 // ── Type augmentation ────────────────────────────────────────────────
 declare module "next-auth" {
@@ -11,11 +11,13 @@ declare module "next-auth" {
     user: {
       id: string;
       role: Role;
+      status: UserStatus;
       accentColor?: string | null;
     } & DefaultSession["user"];
   }
   interface User {
     role: Role;
+    status: UserStatus;
     accentColor?: string | null;
   }
 }
@@ -24,6 +26,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: Role;
+    status: UserStatus;
     accentColor?: string | null;
   }
 }
@@ -59,6 +62,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           name: user.name ?? undefined,
           image: user.image ?? undefined,
           role: user.role,
+          status: user.status,
           accentColor: user.accentColor,
         };
       },
@@ -82,7 +86,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             },
           });
         }
-        return dbUser.status === "ACTIVE";
+        if (dbUser.status === "INACTIVE") return false;
+        return true; // PENDING and ACTIVE both get a JWT; proxy handles PENDING
       }
       return true;
     },
@@ -95,11 +100,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (dbUser) {
             token.id = dbUser.id;
             token.role = dbUser.role;
+            token.status = dbUser.status;
             token.accentColor = dbUser.accentColor;
           }
         } else {
           token.id = user.id as string;
           token.role = (user as User).role;
+          token.status = (user as User).status;
           token.accentColor = (user as User).accentColor;
         }
       }
@@ -108,6 +115,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     session({ session, token }) {
       session.user.id = token.id;
       session.user.role = token.role;
+      session.user.status = token.status;
       session.user.accentColor = token.accentColor;
       return session;
     },
