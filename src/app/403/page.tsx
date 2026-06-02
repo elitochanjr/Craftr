@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { ShieldOff } from "lucide-react";
 
 export default function ForbiddenPage() {
@@ -11,9 +11,9 @@ export default function ForbiddenPage() {
         <p className="text-muted-foreground text-sm">
           You don&apos;t have permission to view this page.
         </p>
-        <Button asChild>
-          <Link href="/">Go to Dashboard</Link>
-        </Button>
+        <Link href="/" className={buttonVariants()}>
+          Go to Dashboard
+        </Link>
       </div>
     </div>
   );
