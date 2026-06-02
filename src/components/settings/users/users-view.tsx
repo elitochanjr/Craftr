@@ -8,6 +8,8 @@ import {
   deactivateUserAction,
   reactivateUserAction,
   revokeInvitationAction,
+  approveUserAction,
+  rejectUserAction,
 } from "@/app/(app)/settings/users/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,12 +30,34 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { UserPlus, Ban, CheckCircle, Trash2, Mail } from "lucide-react";
+import { UserPlus, Ban, CheckCircle, Trash2, Mail, UserCheck, UserX } from "lucide-react";
 
 interface UsersViewProps {
   users: User[];
   pendingInvitations: Invitation[];
   currentUserId: string;
+}
+
+function StatusBadge({ status }: { status: User["status"] }) {
+  if (status === "PENDING") {
+    return (
+      <Badge className="text-xs shrink-0 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 border-0">
+        Pending
+      </Badge>
+    );
+  }
+  if (status === "ACTIVE") {
+    return (
+      <Badge className="text-xs shrink-0 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400 border-0">
+        Active
+      </Badge>
+    );
+  }
+  return (
+    <Badge variant="secondary" className="text-xs shrink-0">
+      Inactive
+    </Badge>
+  );
 }
 
 export function UsersView({
@@ -79,6 +103,20 @@ export function UsersView({
   function handleReactivate(userId: string) {
     startTransition(async () => {
       await reactivateUserAction(userId);
+    });
+  }
+
+  function handleApprove(userId: string) {
+    startTransition(async () => {
+      const res = await approveUserAction(userId);
+      if (res.error) setError(res.error);
+    });
+  }
+
+  function handleReject(userId: string) {
+    startTransition(async () => {
+      const res = await rejectUserAction(userId);
+      if (res.error) setError(res.error);
     });
   }
 
@@ -131,11 +169,7 @@ export function UsersView({
                   <p className="text-sm font-medium truncate">
                     {u.name ?? u.email}
                   </p>
-                  {u.status === "INACTIVE" && (
-                    <Badge variant="secondary" className="text-xs shrink-0">
-                      Deactivated
-                    </Badge>
-                  )}
+                  <StatusBadge status={u.status} />
                   {u.id === currentUserId && (
                     <Badge variant="outline" className="text-xs shrink-0">
                       You
@@ -148,23 +182,47 @@ export function UsersView({
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <Select
-                  value={u.role}
-                  onValueChange={(v) => handleRoleChange(u.id, v as Role)}
-                  disabled={u.id === currentUserId}
-                >
-                  <SelectTrigger className="h-7 text-xs w-24">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ADMIN">Admin</SelectItem>
-                    <SelectItem value="STAFF">Staff</SelectItem>
-                  </SelectContent>
-                </Select>
+                {u.status !== "PENDING" && (
+                  <Select
+                    value={u.role}
+                    onValueChange={(v) => handleRoleChange(u.id, v as Role)}
+                    disabled={u.id === currentUserId}
+                  >
+                    <SelectTrigger className="h-7 text-xs w-24">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ADMIN">Admin</SelectItem>
+                      <SelectItem value="STAFF">Staff</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
 
                 {u.id !== currentUserId && (
                   <>
-                    {u.status === "ACTIVE" ? (
+                    {u.status === "PENDING" && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-emerald-600 hover:text-emerald-700"
+                          onClick={() => handleApprove(u.id)}
+                          title="Approve"
+                        >
+                          <UserCheck className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => handleReject(u.id)}
+                          title="Reject"
+                        >
+                          <UserX className="h-3.5 w-3.5" />
+                        </Button>
+                      </>
+                    )}
+                    {u.status === "ACTIVE" && (
                       <Button
                         variant="ghost"
                         size="icon-sm"
@@ -174,7 +232,8 @@ export function UsersView({
                       >
                         <Ban className="h-3.5 w-3.5" />
                       </Button>
-                    ) : (
+                    )}
+                    {u.status === "INACTIVE" && (
                       <Button
                         variant="ghost"
                         size="icon-sm"

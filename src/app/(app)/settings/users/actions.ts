@@ -73,6 +73,23 @@ export async function reactivateUserAction(userId: string) {
   return { success: true };
 }
 
+export async function approveUserAction(userId: string) {
+  await requireAdmin();
+  await prisma.user.update({
+    where: { id: userId },
+    data: { status: "ACTIVE" },
+  });
+  revalidatePath("/settings/users");
+  return { success: true };
+}
+
+export async function rejectUserAction(userId: string) {
+  await requireAdmin();
+  await prisma.user.delete({ where: { id: userId } });
+  revalidatePath("/settings/users");
+  return { success: true };
+}
+
 export async function revokeInvitationAction(invitationId: string) {
   await requireAdmin();
   await prisma.invitation.delete({ where: { id: invitationId } });
