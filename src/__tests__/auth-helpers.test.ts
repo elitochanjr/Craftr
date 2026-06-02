@@ -26,7 +26,7 @@ beforeEach(() => {
 
 describe("requireAuth", () => {
   it("redirects to /sign-in when session is null", async () => {
-    mockAuth.mockResolvedValueOnce(null);
+    mockAuth.mockResolvedValueOnce(null as any);
     await expect(requireAuth()).rejects.toThrow("REDIRECT:/sign-in");
     expect(mockRedirect).toHaveBeenCalledWith("/sign-in");
   });
