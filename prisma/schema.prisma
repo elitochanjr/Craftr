@@ -19,6 +19,12 @@ enum Role {
   STAFF
 }
 
+enum UserStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String?
@@ -26,10 +32,10 @@ model User {
   emailVerified DateTime?
   image         String?
   // Custom fields
-  role          Role      @default(STAFF)
+  role          Role       @default(STAFF)
   hashedPassword String?
   accentColor   String?   // hex or CSS var name
-  active        Boolean   @default(true)
+  status        UserStatus @default(PENDING)
 
   accounts      Account[]
   sessions      Session[]

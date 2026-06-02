@@ -10,7 +10,7 @@ const prisma = new PrismaClient({ adapter });
 
 async function main() {
   const email = "admin@craftr.app";
-  const password = "admin123";
+  const password = "Cr@ftr!Adm1n#26";
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
@@ -26,7 +26,7 @@ async function main() {
       name: "Admin",
       role: "ADMIN",
       hashedPassword,
-      active: true,
+      status: "ACTIVE",
     },
   });
 

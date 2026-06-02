@@ -131,7 +131,7 @@ export function UsersView({
                   <p className="text-sm font-medium truncate">
                     {u.name ?? u.email}
                   </p>
-                  {!u.active && (
+                  {u.status === "INACTIVE" && (
                     <Badge variant="secondary" className="text-xs shrink-0">
                       Deactivated
                     </Badge>
@@ -164,7 +164,7 @@ export function UsersView({
 
                 {u.id !== currentUserId && (
                   <>
-                    {u.active ? (
+                    {u.status === "ACTIVE" ? (
                       <Button
                         variant="ghost"
                         size="icon-sm"

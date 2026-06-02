@@ -18,7 +18,7 @@ export async function maybeNotifyLowStock(
   if (oldQty < threshold || newQty >= threshold) return;
 
   const users = await prisma.user.findMany({
-    where: { active: true },
+    where: { status: "ACTIVE" },
     select: { id: true, role: true, email: true },
   });
 

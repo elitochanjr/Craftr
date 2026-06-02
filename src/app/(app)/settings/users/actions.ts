@@ -57,7 +57,7 @@ export async function deactivateUserAction(userId: string) {
   }
   await prisma.user.update({
     where: { id: userId },
-    data: { active: false },
+    data: { status: "INACTIVE" },
   });
   revalidatePath("/settings/users");
   return { success: true };
@@ -67,7 +67,7 @@ export async function reactivateUserAction(userId: string) {
   await requireAdmin();
   await prisma.user.update({
     where: { id: userId },
-    data: { active: true },
+    data: { status: "ACTIVE" },
   });
   revalidatePath("/settings/users");
   return { success: true };

@@ -1,5 +1,6 @@
-import NextAuth, { type DefaultSession } from "next-auth";
+import NextAuth, { type DefaultSession, type User } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import type { Role } from "@/generated/prisma/client";
@@ -31,6 +32,7 @@ declare module "next-auth/jwt" {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   providers: [
+    Google,
     Credentials({
       credentials: {
         email: { label: "Email", type: "email" },
@@ -43,7 +45,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { email: credentials.email as string },
         });
 
-        if (!user?.hashedPassword || !user.active) return null;
+        if (!user?.hashedPassword || user.status !== "ACTIVE") return null;
 
         const valid = await bcrypt.compare(
           credentials.password as string,
@@ -63,11 +65,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    async signIn({ account, profile }) {
+      if (account?.provider === "google") {
+        const email = profile?.email;
+        if (!email) return false;
+        let dbUser = await prisma.user.findUnique({ where: { email } });
+        if (!dbUser) {
+          dbUser = await prisma.user.create({
+            data: {
+              email,
+              name: profile.name ?? null,
+              image: (profile as { picture?: string }).picture ?? null,
+              role: "STAFF",
+              status: "PENDING",
+              emailVerified: new Date(),
+            },
+          });
+        }
+        return dbUser.status === "ACTIVE";
+      }
+      return true;
+    },
+    async jwt({ token, user, account }) {
       if (user) {
-        token.id = user.id as string;
-        token.role = (user as User).role;
-        token.accentColor = (user as User).accentColor;
+        if (account?.provider === "google") {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: token.email! },
+          });
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.role = dbUser.role;
+            token.accentColor = dbUser.accentColor;
+          }
+        } else {
+          token.id = user.id as string;
+          token.role = (user as User).role;
+          token.accentColor = (user as User).accentColor;
+        }
       }
       return token;
     },

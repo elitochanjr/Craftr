@@ -34,7 +34,7 @@ export async function acceptInviteAction(
         name: name.trim() || undefined,
         role: invitation.role,
         hashedPassword,
-        active: true,
+        status: "ACTIVE",
       },
     }),
     prisma.invitation.update({
