@@ -75,19 +75,24 @@ export async function reactivateUserAction(userId: string) {
 
 export async function approveUserAction(userId: string) {
   await requireAdmin();
-  await prisma.user.update({
-    where: { id: userId },
-    data: { status: "ACTIVE" },
-  });
+  try {
+    await prisma.user.update({ where: { id: userId }, data: { status: "ACTIVE" } });
+  } catch {
+    return { success: false, error: "Failed to approve user." };
+  }
   revalidatePath("/settings/users");
-  return { success: true };
+  return { success: true, error: null };
 }
 
 export async function rejectUserAction(userId: string) {
   await requireAdmin();
-  await prisma.user.delete({ where: { id: userId } });
+  try {
+    await prisma.user.delete({ where: { id: userId } });
+  } catch {
+    return { success: false, error: "Failed to reject user." };
+  }
   revalidatePath("/settings/users");
-  return { success: true };
+  return { success: true, error: null };
 }
 
 export async function revokeInvitationAction(invitationId: string) {
