@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { auth } from "@/auth";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
   title: "Craftr",
@@ -36,7 +39,7 @@ export default async function RootLayout({
       data-accent={accent}
       suppressHydrationWarning
     >
-      <body className="min-h-full font-sans antialiased bg-background text-foreground">
+      <body className={`${inter.variable} min-h-full font-sans antialiased bg-background text-foreground`}>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
