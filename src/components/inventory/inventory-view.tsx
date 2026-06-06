@@ -292,7 +292,7 @@ export function InventoryView({
       quantity: parseFloat(form.quantity) || 0,
       unit: form.unit || "unit",
       packSize: form.packSize ? parseFloat(form.packSize) : null,
-      lowStockThreshold: parseFloat(form.lowStockThreshold) || 5,
+      lowStockThreshold: isNaN(parseFloat(form.lowStockThreshold)) ? 5 : parseFloat(form.lowStockThreshold),
       cost: parseFloat(form.cost) || 0,
       location: form.location || undefined,
       supplierId:
