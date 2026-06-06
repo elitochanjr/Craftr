@@ -33,7 +33,9 @@ export async function inviteUserAction(email: string, role: Role) {
     process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const inviteUrl = `${baseUrl}/accept-invite?token=${token}`;
 
-  await sendInvitationEmail(trimmed, inviteUrl);
+  await sendInvitationEmail(trimmed, inviteUrl).catch((err) =>
+    console.error("[INVITE_EMAIL_FAILED]", err)
+  );
 
   console.log(
     `[invite] ${session.user.email} invited ${trimmed} as ${role}. Link: ${inviteUrl}`
