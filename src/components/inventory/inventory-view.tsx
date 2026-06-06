@@ -78,7 +78,7 @@ type ItemRow = {
   supplier: { id: string; name: string } | null;
 };
 
-type SortKey = "name" | "category" | "quantity" | "location" | "supplier";
+type SortKey = "name" | "category" | "quantity";
 type SortDir = "asc" | "desc";
 
 interface ItemFormData {
@@ -215,14 +215,6 @@ export function InventoryView({
           return sort.dir === "asc"
             ? a.quantity - b.quantity
             : b.quantity - a.quantity;
-        case "location":
-          av = a.location ?? "";
-          bv = b.location ?? "";
-          break;
-        case "supplier":
-          av = a.supplier?.name ?? "";
-          bv = b.supplier?.name ?? "";
-          break;
       }
       const cmp = av.localeCompare(bv);
       return sort.dir === "asc" ? cmp : -cmp;
@@ -521,8 +513,6 @@ export function InventoryView({
                     { key: "name", label: "Name" },
                     { key: "category", label: "Category" },
                     { key: "quantity", label: "Qty" },
-                    { key: "location", label: "Location" },
-                    { key: "supplier", label: "Supplier" },
                   ] as { key: SortKey; label: string }[]
                 ).map(({ key, label }) => (
                   <th
@@ -534,6 +524,9 @@ export function InventoryView({
                     <SortIcon col={key} />
                   </th>
                 ))}
+                <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground whitespace-nowrap">
+                  Notes
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -560,11 +553,8 @@ export function InventoryView({
                       {item.quantity} {item.unit}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {item.location ?? "—"}
-                  </td>
-                  <td className="px-4 py-3 text-muted-foreground">
-                    {item.supplier?.name ?? "—"}
+                  <td className="px-4 py-3 text-muted-foreground max-w-[240px] truncate">
+                    {item.notes ?? "—"}
                   </td>
                 </tr>
               ))}
