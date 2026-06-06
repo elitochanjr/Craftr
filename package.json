@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "db:seed": "npx tsx prisma/seed.ts"
+    "db:seed": "npx tsx prisma/seed.ts",
+    "db:seed-inventory": "npx tsx prisma/seed-inventory.ts"
   },
   "prisma": {
     "seed": "npx tsx prisma/seed.ts"
@@ -54,6 +55,7 @@
     "tailwindcss": "^4",
     "tsx": "^4.22.3",
     "typescript": "^5",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.7",
+    "xlsx": "^0.18.5"
   }
 }

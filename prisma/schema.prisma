@@ -133,6 +133,7 @@ model Item {
   photoUrl          String?
   notes             String?
   sku               String?  // nice-to-have v2, nullable
+  packSize          Float?   // units per purchase pack (e.g. 50 sheets/pack)
 
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])

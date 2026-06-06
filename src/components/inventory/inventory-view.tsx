@@ -381,7 +381,11 @@ export function InventoryView({
             onValueChange={(v) => setFilterCat(v === "__all__" ? "" : (v ?? ""))}
           >
             <SelectTrigger className="h-8 text-xs w-auto min-w-32">
-              <SelectValue placeholder="All categories" />
+              <SelectValue>
+                {filterCat
+                  ? (categories.find((c) => c.id === filterCat)?.name ?? "All categories")
+                  : "All categories"}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__all__">All categories</SelectItem>
@@ -399,7 +403,11 @@ export function InventoryView({
             onValueChange={(v) => setFilterSupplier(v === "__all__" ? "" : (v ?? ""))}
           >
             <SelectTrigger className="h-8 text-xs w-auto min-w-32">
-              <SelectValue placeholder="All suppliers" />
+              <SelectValue>
+                {filterSupplier
+                  ? (suppliers.find((s) => s.id === filterSupplier)?.name ?? "All suppliers")
+                  : "All suppliers"}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__all__">All suppliers</SelectItem>
@@ -803,7 +811,11 @@ export function InventoryView({
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
+                      <SelectValue>
+                        {form.categoryId
+                          ? (categories.find((c) => c.id === form.categoryId)?.name ?? "Select category")
+                          : "Select category"}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none__" disabled>
@@ -894,7 +906,11 @@ export function InventoryView({
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="No supplier" />
+                      <SelectValue>
+                        {form.supplierId
+                          ? (suppliers.find((s) => s.id === form.supplierId)?.name ?? "No supplier")
+                          : "No supplier"}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value={NO_SUPPLIER}>No supplier</SelectItem>
