@@ -65,6 +65,7 @@ type ItemRow = {
   name: string;
   quantity: number;
   unit: string;
+  packSize: number | null;
   lowStockThreshold: number;
   cost: number;
   location: string | null;
@@ -85,6 +86,7 @@ interface ItemFormData {
   categoryId: string;
   quantity: string;
   unit: string;
+  packSize: string;
   lowStockThreshold: string;
   cost: string;
   location: string;
@@ -98,6 +100,7 @@ const EMPTY_FORM: ItemFormData = {
   categoryId: "",
   quantity: "0",
   unit: "unit",
+  packSize: "",
   lowStockThreshold: "5",
   cost: "0",
   location: "",
@@ -269,6 +272,7 @@ export function InventoryView({
       categoryId: item.categoryId,
       quantity: String(item.quantity),
       unit: item.unit,
+      packSize: item.packSize != null ? String(item.packSize) : "",
       lowStockThreshold: String(item.lowStockThreshold),
       cost: String(item.cost),
       location: item.location ?? "",
@@ -287,6 +291,7 @@ export function InventoryView({
       categoryId: form.categoryId,
       quantity: parseFloat(form.quantity) || 0,
       unit: form.unit || "unit",
+      packSize: form.packSize ? parseFloat(form.packSize) : null,
       lowStockThreshold: parseFloat(form.lowStockThreshold) || 5,
       cost: parseFloat(form.cost) || 0,
       location: form.location || undefined,
@@ -672,6 +677,14 @@ export function InventoryView({
                       {selected.quantity} {selected.unit}
                     </dd>
                   </div>
+                  {selected.packSize != null && (
+                    <div>
+                      <dt className="text-xs text-muted-foreground">Pack size</dt>
+                      <dd className="font-medium">
+                        {selected.packSize} {selected.unit}/pack
+                      </dd>
+                    </div>
+                  )}
                   <div>
                     <dt className="text-xs text-muted-foreground">
                       Low-stock threshold
@@ -852,6 +865,20 @@ export function InventoryView({
                       placeholder="unit"
                     />
                   </div>
+                </div>
+
+                {/* Pack size + Unit are already paired; pack size as standalone optional */}
+                <div className="space-y-1.5">
+                  <Label htmlFor="i-packsize">Pack size (optional)</Label>
+                  <Input
+                    id="i-packsize"
+                    type="number"
+                    min={1}
+                    step="any"
+                    value={form.packSize}
+                    onChange={(e) => field("packSize", e.target.value)}
+                    placeholder={`${form.unit || "unit"}s per pack`}
+                  />
                 </div>
 
                 {/* Low-stock threshold + Cost */}

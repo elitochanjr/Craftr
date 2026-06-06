@@ -9,6 +9,7 @@ export interface ItemInput {
   categoryId: string;
   quantity: number;
   unit: string;
+  packSize?: number | null;
   lowStockThreshold: number;
   cost: number;
   location?: string;
@@ -28,6 +29,7 @@ export async function createItemAction(input: ItemInput) {
       categoryId: input.categoryId,
       quantity: input.quantity,
       unit: input.unit.trim() || "unit",
+      packSize: input.packSize ?? null,
       lowStockThreshold: input.lowStockThreshold,
       cost: input.cost,
       location: input.location?.trim() || null,
@@ -53,6 +55,7 @@ export async function updateItemAction(id: string, input: ItemInput) {
       categoryId: input.categoryId,
       quantity: input.quantity,
       unit: input.unit.trim() || "unit",
+      packSize: input.packSize ?? null,
       lowStockThreshold: input.lowStockThreshold,
       cost: input.cost,
       location: input.location?.trim() || null,
