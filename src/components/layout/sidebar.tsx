@@ -10,6 +10,7 @@ import {
   Users,
   Truck,
   BarChart2,
+  Tag,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -24,6 +25,7 @@ const navItems = [
   { href: "/projects", label: "Projects", icon: FolderOpen },
   { href: "/customers", label: "Customers", icon: Users },
   { href: "/suppliers", label: "Suppliers", icon: Truck },
+  { href: "/categories", label: "Categories", icon: Tag },
   { href: "/reports", label: "Reports", icon: BarChart2 },
 ];
 

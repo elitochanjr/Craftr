@@ -1,9 +1,14 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
 import { signIn } from "@/auth";
 
+export async function signInWithGoogleInvite(formData: FormData) {
+  const token = formData.get("token") as string;
+  await signIn("google", { redirectTo: `/accept-invite/callback?token=${token}` });
+}
+
+// Keep credentials path for potential future use (admin-created passwords, etc.)
 export async function acceptInviteAction(
   token: string,
   name: string,
@@ -25,6 +30,7 @@ export async function acceptInviteAction(
   });
   if (existing) return { error: "An account with this email already exists." };
 
+  const bcrypt = await import("bcryptjs");
   const hashedPassword = await bcrypt.hash(password, 12);
 
   await prisma.$transaction([
@@ -43,7 +49,6 @@ export async function acceptInviteAction(
     }),
   ]);
 
-  // Auto sign-in
   await signIn("credentials", {
     email: invitation.email,
     password,
