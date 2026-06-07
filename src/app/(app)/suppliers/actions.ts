@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export interface SupplierInput {
   name: string;
@@ -29,6 +29,7 @@ export async function createSupplierAction(input: SupplierInput) {
 
   await prisma.supplier.create({ data });
   revalidatePath("/suppliers");
+  revalidateTag("suppliers", {});
   return { success: true };
 }
 
@@ -39,6 +40,7 @@ export async function updateSupplierAction(id: string, input: SupplierInput) {
 
   await prisma.supplier.update({ where: { id }, data });
   revalidatePath("/suppliers");
+  revalidateTag("suppliers", {});
   return { success: true };
 }
 
@@ -53,5 +55,6 @@ export async function deleteSupplierAction(id: string) {
 
   await prisma.supplier.delete({ where: { id } });
   revalidatePath("/suppliers");
+  revalidateTag("suppliers", {});
   return { success: true };
 }

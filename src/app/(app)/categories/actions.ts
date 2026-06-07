@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth-helpers";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function createCategoryAction(name: string) {
   await requireAuth();
@@ -16,6 +16,7 @@ export async function createCategoryAction(name: string) {
   }
 
   revalidatePath("/categories");
+  revalidateTag("categories", {});
   return { success: true };
 }
 
@@ -31,6 +32,7 @@ export async function renameCategoryAction(id: string, name: string) {
   }
 
   revalidatePath("/categories");
+  revalidateTag("categories", {});
   return { success: true };
 }
 
@@ -46,5 +48,6 @@ export async function deleteCategoryAction(id: string) {
 
   await prisma.category.delete({ where: { id } });
   revalidatePath("/categories");
+  revalidateTag("categories", {});
   return { success: true };
 }
