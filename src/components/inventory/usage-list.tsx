@@ -192,7 +192,7 @@ export function UsageList({
                 </div>
               </div>
             ) : (
-              <div key={e.id} className="flex items-start justify-between text-sm gap-2 group">
+              <div key={e.id} className="flex items-start justify-between text-sm gap-2">
                 <div className="min-w-0">
                   <p className="text-sm font-medium truncate">{e.item.name}</p>
                   <p className="text-xs text-muted-foreground">
@@ -209,7 +209,7 @@ export function UsageList({
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="h-6 w-6"
                     onClick={() => startEdit(e)}
                     aria-label="Edit usage"
                   >
@@ -218,7 +218,7 @@ export function UsageList({
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                    className="h-6 w-6 text-destructive hover:text-destructive"
                     onClick={() => setDeleteId(e.id)}
                     aria-label="Delete usage"
                   >
