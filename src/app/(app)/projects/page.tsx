@@ -6,21 +6,15 @@ import { ProjectsView } from "@/components/projects/projects-view";
 export default async function ProjectsPage() {
   await requireAuth();
 
-  const [projects, items] = await Promise.all([
-    prisma.project.findMany({
-      orderBy: { startDate: "desc" },
-      include: {
-        stockMovements: {
-          where: { type: "USAGE" },
-          select: { quantity: true, unitCost: true },
-        },
+  const projects = await prisma.project.findMany({
+    orderBy: { startDate: "desc" },
+    include: {
+      stockMovements: {
+        where: { type: "USAGE" },
+        select: { quantity: true, unitCost: true },
       },
-    }),
-    prisma.item.findMany({
-      select: { id: true, name: true, unit: true, cost: true, quantity: true },
-      orderBy: { name: "asc" },
-    }),
-  ]);
+    },
+  });
 
   const projectsWithCost = projects.map((p) => ({
     ...p,
@@ -34,7 +28,7 @@ export default async function ProjectsPage() {
   return (
     <>
       <Header title="Projects" />
-      <ProjectsView projects={projectsWithCost} items={items} />
+      <ProjectsView projects={projectsWithCost} />
     </>
   );
 }

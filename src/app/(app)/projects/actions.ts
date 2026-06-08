@@ -17,7 +17,7 @@ export async function createProjectAction(input: ProjectInput) {
   await requireAuth();
   if (!input.name.trim()) return { error: "Project name is required." };
 
-  await prisma.project.create({
+  const project = await prisma.project.create({
     data: {
       name: input.name.trim(),
       status: input.status,
@@ -28,7 +28,7 @@ export async function createProjectAction(input: ProjectInput) {
   });
 
   revalidatePath("/projects");
-  return { success: true };
+  return { success: true, id: project.id };
 }
 
 export async function updateProjectAction(id: string, input: ProjectInput) {
@@ -47,6 +47,7 @@ export async function updateProjectAction(id: string, input: ProjectInput) {
   });
 
   revalidatePath("/projects");
+  revalidatePath(`/projects/${id}`);
   return { success: true };
 }
 
@@ -55,5 +56,6 @@ export async function deleteProjectAction(id: string) {
   // StockMovements will be set to null (onDelete: SetNull in schema)
   await prisma.project.delete({ where: { id } });
   revalidatePath("/projects");
+  revalidatePath(`/projects/${id}`);
   return { success: true };
 }
