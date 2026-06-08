@@ -368,7 +368,11 @@ export function OrdersView({ orders, customers, items, role }: OrdersViewProps) 
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select customer" />
+                      <SelectValue>
+                        {form.customerId
+                          ? (customers.find((c) => c.id === form.customerId)?.name ?? "Select customer")
+                          : "Select customer"}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none__" disabled>
@@ -404,7 +408,9 @@ export function OrdersView({ orders, customers, items, role }: OrdersViewProps) 
                       onValueChange={(v) => field("status", (v ?? "ACTIVE") as OrderStatus)}
                     >
                       <SelectTrigger>
-                        <SelectValue />
+                        <SelectValue>
+                          {({ ACTIVE: "Active", COMPLETED: "Completed", CANCELLED: "Cancelled" } as Record<string, string>)[form.status] ?? form.status}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="ACTIVE">Active</SelectItem>

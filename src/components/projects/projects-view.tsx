@@ -325,7 +325,9 @@ export function ProjectsView({ projects, items }: ProjectsViewProps) {
                     }
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue>
+                        {({ IN_PROGRESS: "In progress", COMPLETED: "Completed" } as Record<string, string>)[form.status] ?? form.status}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="IN_PROGRESS">In progress</SelectItem>

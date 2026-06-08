@@ -189,7 +189,7 @@ export function UsersView({
                     disabled={u.id === currentUserId}
                   >
                     <SelectTrigger className="h-7 text-xs w-24">
-                      <SelectValue />
+                      <SelectValue>{u.role === "ADMIN" ? "Admin" : "Staff"}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ADMIN">Admin</SelectItem>
@@ -347,7 +347,7 @@ export function UsersView({
                     onValueChange={(v) => setInviteRole(v as Role)}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue>{inviteRole === "ADMIN" ? "Admin" : "Staff"}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="STAFF">Staff</SelectItem>
