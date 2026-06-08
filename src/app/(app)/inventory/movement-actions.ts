@@ -161,6 +161,75 @@ export async function logAdjustmentAction(input: AdjustmentInput) {
   return { success: true };
 }
 
+// ── Edit / delete usage entries ───────────────────────────────────────────
+
+export async function updateUsageAction(id: string, input: { quantity: number }) {
+  await requireAuth();
+  if (input.quantity <= 0) return { error: "Quantity must be greater than zero." };
+
+  const movement = await prisma.stockMovement.findUnique({
+    where: { id },
+    select: { quantity: true, itemId: true },
+  });
+  if (!movement) return { error: "Usage entry not found." };
+
+  const oldQty = Math.abs(movement.quantity);
+  const delta = input.quantity - oldQty; // >0 = using more, <0 = using less
+
+  if (delta !== 0) {
+    const item = await prisma.item.findUnique({
+      where: { id: movement.itemId },
+      select: { quantity: true },
+    });
+    if (!item) return { error: "Item not found." };
+    if (item.quantity - delta < 0) {
+      return {
+        error: `Cannot increase usage — only ${item.quantity + oldQty} available.`,
+      };
+    }
+    await prisma.$transaction(async (tx) => {
+      await tx.stockMovement.update({
+        where: { id },
+        data: { quantity: -input.quantity },
+      });
+      await tx.item.update({
+        where: { id: movement.itemId },
+        data: { quantity: { decrement: delta } },
+      });
+    });
+  }
+
+  revalidatePath("/inventory");
+  revalidatePath("/orders");
+  revalidatePath("/projects");
+  return { success: true };
+}
+
+export async function deleteUsageAction(id: string) {
+  await requireAuth();
+
+  const movement = await prisma.stockMovement.findUnique({
+    where: { id },
+    select: { quantity: true, itemId: true },
+  });
+  if (!movement) return { error: "Usage entry not found." };
+
+  const restoreQty = Math.abs(movement.quantity);
+
+  await prisma.$transaction(async (tx) => {
+    await tx.stockMovement.delete({ where: { id } });
+    await tx.item.update({
+      where: { id: movement.itemId },
+      data: { quantity: { increment: restoreQty } },
+    });
+  });
+
+  revalidatePath("/inventory");
+  revalidatePath("/orders");
+  revalidatePath("/projects");
+  return { success: true };
+}
+
 // ── Fetch movement history ─────────────────────────────────────────────────
 
 export async function getItemMovementsAction(itemId: string) {
