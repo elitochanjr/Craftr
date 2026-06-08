@@ -9,6 +9,7 @@ import {
   deleteProjectAction,
   type ProjectInput,
 } from "@/app/(app)/projects/actions";
+import { logUsageAction } from "@/app/(app)/inventory/movement-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,7 +32,6 @@ import {
 } from "@/components/ui/dialog";
 import { ChevronRight, Pencil, Trash2 } from "lucide-react";
 import { UsageList } from "@/components/inventory/usage-list";
-import { LogUsageForm } from "@/components/inventory/log-usage-form";
 
 type ProjectRow = Omit<Project, "stockMovements"> & {
   totalSupplyCost: number;
@@ -75,9 +75,46 @@ export function ProjectDetail({ project, items }: ProjectDetailProps) {
   });
 
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [usageOpen, setUsageOpen] = useState(false);
+  const [loggingUsage, setLoggingUsage] = useState(false);
+  const [usageForm, setUsageForm] = useState({ itemId: "", quantity: "", unitCost: "" });
+  const [usageError, setUsageError] = useState<string | null>(null);
   const [usageRefreshKey, setUsageRefreshKey] = useState(0);
   const [liveSupplyCost, setLiveSupplyCost] = useState<number | null>(null);
+
+  function openUsageForm() {
+    setUsageForm({ itemId: "", quantity: "", unitCost: "" });
+    setUsageError(null);
+    setLoggingUsage(true);
+  }
+
+  function cancelUsageForm() {
+    setLoggingUsage(false);
+    setUsageError(null);
+  }
+
+  function handleUsageItemChange(id: string) {
+    const item = items.find((i) => i.id === id);
+    setUsageForm((f) => ({ ...f, itemId: id, unitCost: item ? String(item.cost) : "" }));
+  }
+
+  function handleLogUsage() {
+    setUsageError(null);
+    const qty = parseFloat(usageForm.quantity);
+    const cost = parseFloat(usageForm.unitCost);
+    if (!usageForm.itemId) { setUsageError("Select an item."); return; }
+    if (isNaN(qty) || qty <= 0) { setUsageError("Quantity must be greater than zero."); return; }
+    if (isNaN(cost) || cost < 0) { setUsageError("Unit cost cannot be negative."); return; }
+    startTransition(async () => {
+      const res = await logUsageAction({ itemId: usageForm.itemId, quantity: qty, unitCost: cost, projectId: project.id });
+      if (res.error) {
+        setUsageError(res.error);
+      } else {
+        setLoggingUsage(false);
+        setUsageForm({ itemId: "", quantity: "", unitCost: "" });
+        setUsageRefreshKey((k) => k + 1);
+      }
+    });
+  }
 
   const supplyCost = liveSupplyCost !== null ? liveSupplyCost : project.totalSupplyCost;
 
@@ -264,15 +301,101 @@ export function ProjectDetail({ project, items }: ProjectDetailProps) {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-medium">Supply usage</h3>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-1.5"
-              onClick={() => setUsageOpen(true)}
-            >
-              Log supply usage
-            </Button>
+            {!loggingUsage && (
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={openUsageForm}>
+                Log supply usage
+              </Button>
+            )}
           </div>
+
+          {loggingUsage && (
+            <div className="rounded-lg border border-border px-4 py-4 space-y-4">
+              {usageError && (
+                <div className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {usageError}
+                </div>
+              )}
+              <div className="space-y-1.5">
+                <Label>Item *</Label>
+                <Select
+                  value={usageForm.itemId || "__none__"}
+                  onValueChange={(v) => handleUsageItemChange(v === "__none__" ? "" : (v ?? ""))}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue>
+                      {usageForm.itemId
+                        ? (items.find((i) => i.id === usageForm.itemId)?.name ?? "Select item")
+                        : "Select item"}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__" disabled label="Select item" />
+                    {items.map((item) => (
+                      <SelectItem key={item.id} value={item.id} label={item.name}>
+                        <span className="text-muted-foreground text-xs ml-auto shrink-0">
+                          {item.quantity} {item.unit}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="lu-qty">Quantity used *</Label>
+                  <div className="flex items-center gap-1.5">
+                    <Input
+                      id="lu-qty"
+                      type="number"
+                      min={0.001}
+                      step="any"
+                      value={usageForm.quantity}
+                      onChange={(e) => setUsageForm((f) => ({ ...f, quantity: e.target.value }))}
+                      placeholder="0"
+                    />
+                    {usageForm.itemId && (
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        {items.find((i) => i.id === usageForm.itemId)?.unit}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="lu-cost">Unit cost ($)</Label>
+                  <Input
+                    id="lu-cost"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={usageForm.unitCost}
+                    onChange={(e) => setUsageForm((f) => ({ ...f, unitCost: e.target.value }))}
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+              {usageForm.quantity && usageForm.unitCost && (
+                <p className="text-xs text-muted-foreground">
+                  Total cost:{" "}
+                  <span className="font-medium text-foreground">
+                    ${(parseFloat(usageForm.quantity) * parseFloat(usageForm.unitCost)).toFixed(2)}
+                  </span>
+                </p>
+              )}
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={cancelUsageForm}>
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handleLogUsage}
+                  disabled={!usageForm.itemId || !usageForm.quantity}
+                >
+                  Log usage
+                </Button>
+              </div>
+            </div>
+          )}
+
           <UsageList
             projectId={project.id}
             refreshKey={usageRefreshKey}
@@ -300,15 +423,6 @@ export function ProjectDetail({ project, items }: ProjectDetailProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Log usage sheet */}
-      <LogUsageForm
-        open={usageOpen}
-        onOpenChange={setUsageOpen}
-        contextLabel={project.name}
-        projectId={project.id}
-        items={items}
-        onSuccess={() => setUsageRefreshKey((k) => k + 1)}
-      />
     </div>
   );
 }
