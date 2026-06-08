@@ -186,13 +186,10 @@ export function LogUsageForm({
               <Input
                 id="u-cost"
                 type="number"
-                min={0}
-                step="0.01"
                 value={form.unitCost}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, unitCost: e.target.value }))
-                }
-                placeholder="0.00"
+                readOnly
+                placeholder="—"
+                className="bg-muted text-muted-foreground"
               />
             </div>
           </div>

@@ -365,11 +365,10 @@ export function ProjectDetail({ project, items }: ProjectDetailProps) {
                   <Input
                     id="lu-cost"
                     type="number"
-                    min={0}
-                    step="0.01"
                     value={usageForm.unitCost}
-                    onChange={(e) => setUsageForm((f) => ({ ...f, unitCost: e.target.value }))}
-                    placeholder="0.00"
+                    readOnly
+                    placeholder="—"
+                    className="bg-muted text-muted-foreground"
                   />
                 </div>
               </div>
