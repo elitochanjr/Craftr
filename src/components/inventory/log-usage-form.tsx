@@ -135,18 +135,25 @@ export function LogUsageForm({
                 handleItemChange(v === "__none__" ? "" : (v ?? ""))
               }
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Select item" />
+              <SelectTrigger className="w-full">
+                {form.itemId ? (
+                  <span className="flex-1 truncate text-left text-sm">
+                    {items.find((i) => i.id === form.itemId)?.name}
+                  </span>
+                ) : (
+                  <SelectValue placeholder="Select item" />
+                )}
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__none__" disabled>
-                  Select item
-                </SelectItem>
+                <SelectItem value="__none__" disabled label="Select item" />
                 {items.map((item) => (
-                  <SelectItem key={item.id} value={item.id}>
-                    {item.name}
-                    <span className="text-muted-foreground ml-1.5 text-xs">
-                      ({item.quantity} {item.unit} in stock)
+                  <SelectItem
+                    key={item.id}
+                    value={item.id}
+                    label={item.name}
+                  >
+                    <span className="text-muted-foreground text-xs ml-auto shrink-0">
+                      {item.quantity} {item.unit}
                     </span>
                   </SelectItem>
                 ))}
