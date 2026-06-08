@@ -136,13 +136,11 @@ export function LogUsageForm({
               }
             >
               <SelectTrigger className="w-full">
-                {form.itemId ? (
-                  <span className="flex-1 truncate text-left text-sm">
-                    {items.find((i) => i.id === form.itemId)?.name}
-                  </span>
-                ) : (
-                  <SelectValue placeholder="Select item" />
-                )}
+                <SelectValue>
+                  {form.itemId
+                    ? (items.find((i) => i.id === form.itemId)?.name ?? "Select item")
+                    : "Select item"}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="__none__" disabled label="Select item" />
