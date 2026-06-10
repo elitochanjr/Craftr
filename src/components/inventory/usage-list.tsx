@@ -165,7 +165,7 @@ export function UsageList({
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Unit cost ($)</p>
+                    <p className="text-xs text-muted-foreground">Unit cost (₱)</p>
                     <Input
                       type="number"
                       value={e.unitCost ?? ""}
@@ -178,7 +178,7 @@ export function UsageList({
                   <p className="text-xs text-muted-foreground">
                     Total:{" "}
                     <span className="font-medium text-foreground">
-                      ${(parseFloat(editQty) * e.unitCost).toFixed(2)}
+                      ₱{(parseFloat(editQty) * e.unitCost).toFixed(2)}
                     </span>
                   </p>
                 )}
@@ -203,7 +203,7 @@ export function UsageList({
                 <div className="flex items-center gap-1 shrink-0">
                   <span className="text-xs text-muted-foreground">
                     {e.unitCost != null
-                      ? `$${(Math.abs(e.quantity) * e.unitCost).toFixed(2)}`
+                      ? `₱${(Math.abs(e.quantity) * e.unitCost).toFixed(2)}`
                       : "—"}
                   </span>
                   <Button

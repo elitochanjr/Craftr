@@ -161,7 +161,7 @@ export function CustomersView({ customers }: CustomersViewProps) {
                       <span className="flex items-center gap-1">
                         <ShoppingBag className="h-3 w-3" />
                         {c.orderCount} order{c.orderCount !== 1 ? "s" : ""} ·{" "}
-                        ${c.totalRevenue.toFixed(2)}
+                        ₱{c.totalRevenue.toFixed(2)}
                       </span>
                     )}
                   </div>
@@ -221,7 +221,7 @@ export function CustomersView({ customers }: CustomersViewProps) {
                         Total revenue
                       </p>
                       <p className="font-semibold text-lg">
-                        ${viewTarget.totalRevenue.toFixed(2)}
+                        ₱{viewTarget.totalRevenue.toFixed(2)}
                       </p>
                     </div>
                   </div>

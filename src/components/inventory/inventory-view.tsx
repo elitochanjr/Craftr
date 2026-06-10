@@ -688,7 +688,7 @@ export function InventoryView({
                       Cost per unit
                     </dt>
                     <dd className="font-medium">
-                      ${selected.cost.toFixed(2)}
+                      ₱{selected.cost.toFixed(2)}
                     </dd>
                   </div>
                   {selected.location && (
@@ -887,7 +887,7 @@ export function InventoryView({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="i-cost">Cost / unit ($)</Label>
+                    <Label htmlFor="i-cost">Cost / unit (₱)</Label>
                     <Input
                       id="i-cost"
                       type="number"

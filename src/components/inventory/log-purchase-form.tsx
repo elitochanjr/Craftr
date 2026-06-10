@@ -131,7 +131,7 @@ export function LogPurchaseForm({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="p-cost">Unit cost ($) *</Label>
+              <Label htmlFor="p-cost">Unit cost (₱) *</Label>
               <Input
                 id="p-cost"
                 type="number"
