@@ -258,6 +258,19 @@ model Product {
 }
 
 // ─────────────────────────────────────────────
+// Overhead Items (equipment/tools with a fixed cost-per-use)
+// ─────────────────────────────────────────────
+
+model OverheadItem {
+  id         String   @id @default(cuid())
+  name       String
+  costPerUse Float    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
 // Notifications
 // ─────────────────────────────────────────────
 
