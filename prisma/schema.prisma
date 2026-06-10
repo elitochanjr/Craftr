@@ -143,6 +143,7 @@ model Item {
 
   stockMovements StockMovement[]
   notifications  Notification[]
+  productMaterials ProductMaterial[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -253,8 +254,45 @@ model Product {
   name          String
   stockQuantity Float    @default(0)
 
+  laborRatePerHour       Float?
+  laborTimeMinutes       Float?
+  generalExpensesPercent Float    @default(0)
+  outputPieces           Int      @default(1)
+  taxEnabled             Boolean  @default(false)
+  markupPercent          Float    @default(0)
+  discountPercent        Float    @default(0)
+  finalRetailPrice       Float?
+
+  materials ProductMaterial[]
+  overheads ProductOverhead[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Product Costing join models
+// ─────────────────────────────────────────────
+
+model ProductMaterial {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  itemId    String
+  item      Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  quantity  Float
+
+  @@unique([productId, itemId])
+}
+
+model ProductOverhead {
+  id             String       @id @default(cuid())
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  overheadItemId String
+  overheadItem   OverheadItem @relation(fields: [overheadItemId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, overheadItemId])
 }
 
 // ─────────────────────────────────────────────
@@ -265,6 +303,8 @@ model OverheadItem {
   id         String   @id @default(cuid())
   name       String
   costPerUse Float    @default(0)
+
+  productOverheads ProductOverhead[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
