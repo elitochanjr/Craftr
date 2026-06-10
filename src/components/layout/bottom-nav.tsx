@@ -16,7 +16,7 @@ const primaryTabs = [
   { href: "/orders", label: "Orders", icon: ShoppingBag },
 ];
 
-const morePaths = ["/projects", "/customers", "/suppliers", "/categories", "/reports", "/settings"];
+const morePaths = ["/projects", "/products", "/customers", "/suppliers", "/categories", "/reports", "/settings"];
 
 export function BottomNav() {
   const pathname = usePathname();

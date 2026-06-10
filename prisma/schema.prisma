@@ -245,6 +245,19 @@ model Project {
 }
 
 // ─────────────────────────────────────────────
+// Products (finished goods you make and sell)
+// ─────────────────────────────────────────────
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  stockQuantity Float    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
 // Notifications
 // ─────────────────────────────────────────────
 
