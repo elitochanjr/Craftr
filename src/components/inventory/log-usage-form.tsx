@@ -182,7 +182,7 @@ export function LogUsageForm({
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="u-cost">Unit cost ($)</Label>
+              <Label htmlFor="u-cost">Unit cost (₱)</Label>
               <Input
                 id="u-cost"
                 type="number"
@@ -199,7 +199,7 @@ export function LogUsageForm({
             <p className="text-xs text-muted-foreground">
               Total cost:{" "}
               <span className="font-medium text-foreground">
-                ${(parseFloat(form.quantity) * parseFloat(form.unitCost)).toFixed(2)}
+                ₱{(parseFloat(form.quantity) * parseFloat(form.unitCost)).toFixed(2)}
               </span>
             </p>
           )}

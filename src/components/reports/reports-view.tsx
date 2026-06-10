@@ -346,7 +346,7 @@ export function ReportsView({
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={spending} margin={{ top: 4, right: 8, left: 0, bottom: 4 }}>
                 <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `$${v}`} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `₱${v}`} />
                 <Tooltip formatter={(v) => (typeof v === "number" ? fmt(v) : v)} />
                 <Legend />
                 {categoryKeys.map((cat, i) => (

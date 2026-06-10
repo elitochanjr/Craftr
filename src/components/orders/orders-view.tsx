@@ -245,9 +245,9 @@ export function OrdersView({ orders, customers, items, role }: OrdersViewProps) 
                   <div className="flex flex-wrap gap-x-4 text-xs text-muted-foreground">
                     <span>{new Date(o.date).toLocaleDateString()}</span>
                     {o.revenue != null && (
-                      <span>Revenue: ${o.revenue.toFixed(2)}</span>
+                      <span>Revenue: ₱{o.revenue.toFixed(2)}</span>
                     )}
-                    <span>Supply cost: ${o.totalSupplyCost.toFixed(2)}</span>
+                    <span>Supply cost: ₱{o.totalSupplyCost.toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -283,7 +283,7 @@ export function OrdersView({ orders, customers, items, role }: OrdersViewProps) 
                     <dt className="text-xs text-muted-foreground">Revenue</dt>
                     <dd className="font-medium">
                       {selected.revenue != null
-                        ? `$${selected.revenue.toFixed(2)}`
+                        ? `₱${selected.revenue.toFixed(2)}`
                         : "—"}
                     </dd>
                   </div>
@@ -291,7 +291,7 @@ export function OrdersView({ orders, customers, items, role }: OrdersViewProps) 
                     <dt className="text-xs text-muted-foreground">
                       Supply cost
                     </dt>
-                    <dd className="font-medium">${supplyCost.toFixed(2)}</dd>
+                    <dd className="font-medium">₱{supplyCost.toFixed(2)}</dd>
                   </div>
                 </dl>
 
@@ -388,7 +388,7 @@ export function OrdersView({ orders, customers, items, role }: OrdersViewProps) 
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="o-rev">Revenue ($)</Label>
+                  <Label htmlFor="o-rev">Revenue (₱)</Label>
                   <Input
                     id="o-rev"
                     type="number"

@@ -117,7 +117,7 @@ export function MovementHistory({ itemId, refreshKey }: MovementHistoryProps) {
                   >
                     {m.quantity > 0 ? `+${m.quantity}` : m.quantity}
                   </span>
-                  {m.unitCost != null && ` @ $${m.unitCost.toFixed(2)}/unit`}
+                  {m.unitCost != null && ` @ ₱${m.unitCost.toFixed(2)}/unit`}
                   {m.vendorName && ` · ${m.vendorName}`}
                   {m.order && ` · Order: ${m.order.customer.name}`}
                   {m.project && ` · ${m.project.name}`}

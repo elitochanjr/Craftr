@@ -282,7 +282,7 @@ export function ProjectDetail({ project, items }: ProjectDetailProps) {
                   </span>
                 )}
                 <span className="text-muted-foreground">
-                  · <span className="font-medium text-foreground">${supplyCost.toFixed(2)}</span> in supplies
+                  · <span className="font-medium text-foreground">₱{supplyCost.toFixed(2)}</span> in supplies
                 </span>
               </div>
             </div>
@@ -361,7 +361,7 @@ export function ProjectDetail({ project, items }: ProjectDetailProps) {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="lu-cost">Unit cost ($)</Label>
+                  <Label htmlFor="lu-cost">Unit cost (₱)</Label>
                   <Input
                     id="lu-cost"
                     type="number"
@@ -376,7 +376,7 @@ export function ProjectDetail({ project, items }: ProjectDetailProps) {
                 <p className="text-xs text-muted-foreground">
                   Total cost:{" "}
                   <span className="font-medium text-foreground">
-                    ${(parseFloat(usageForm.quantity) * parseFloat(usageForm.unitCost)).toFixed(2)}
+                    ₱{(parseFloat(usageForm.quantity) * parseFloat(usageForm.unitCost)).toFixed(2)}
                   </span>
                 </p>
               )}

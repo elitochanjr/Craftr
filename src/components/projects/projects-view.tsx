@@ -122,7 +122,7 @@ export function ProjectsView({ projects }: ProjectsViewProps) {
                     {p.endDate &&
                       ` · Ended ${new Date(p.endDate).toLocaleDateString()}`}
                     {p.totalSupplyCost > 0 &&
-                      ` · $${p.totalSupplyCost.toFixed(2)} supplies`}
+                      ` · ₱${p.totalSupplyCost.toFixed(2)} supplies`}
                   </p>
                   {p.notes && (
                     <p className="text-xs text-muted-foreground line-clamp-1">
