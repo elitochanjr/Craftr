@@ -257,6 +257,7 @@ model Product {
   laborRatePerHour       Float?
   laborTimeMinutes       Float?
   generalExpensesPercent Float    @default(0)
+  spoilagePercent        Decimal  @default(0)
   outputPieces           Int      @default(1)
   taxEnabled             Boolean  @default(false)
   markupPercent          Float    @default(0)

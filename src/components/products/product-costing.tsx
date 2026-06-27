@@ -37,6 +37,7 @@ interface ProductCostingProps {
     laborRatePerHour: number | null;
     laborTimeMinutes: number | null;
     generalExpensesPercent: number;
+    spoilagePercent: number;
     outputPieces: number;
     taxEnabled: boolean;
     markupPercent: number;
@@ -80,6 +81,11 @@ export function ProductCosting({
   const [addQty, setAddQty] = useState<string>("");
   const [addItemError, setAddItemError] = useState<string | null>(null);
 
+  // ── Spoilage state ───────────────────────────────────────────────────────
+  const [spoilagePercent, setSpoilagePercent] = useState<string>(
+    String(initial.spoilagePercent)
+  );
+
   // ── Labor state ──────────────────────────────────────────────────────────
   const [laborRate, setLaborRate] = useState<string>(
     initial.laborRatePerHour !== null ? String(initial.laborRatePerHour) : ""
@@ -117,6 +123,9 @@ export function ProductCosting({
       0
     );
 
+    const spoilagePct = toNum(spoilagePercent);
+    const spoilageCost = materialCostBatch * (spoilagePct / 100);
+
     const rate = toNum(laborRate);
     const time = toNum(laborTime);
     const laborCostBatch = rate > 0 && time > 0 ? (rate / 60) * time : 0;
@@ -134,7 +143,8 @@ export function ProductCosting({
       (generalPct / 100) * (materialCostBatch + laborCostBatch + overheadItemsCost);
     const totalOverheadBatch = overheadItemsCost + generalExpenses;
 
-    const totalBatchCost = materialCostBatch + laborCostBatch + totalOverheadBatch;
+    const totalBatchCost =
+      materialCostBatch + spoilageCost + laborCostBatch + totalOverheadBatch;
     const tax = taxEnabled ? totalBatchCost * 0.12 : 0;
     const totalWithTax = totalBatchCost + tax;
 
@@ -153,6 +163,7 @@ export function ProductCosting({
 
     return {
       materialCostBatch,
+      spoilageCost,
       laborCostBatch,
       overheadItemsCost,
       generalExpenses,
@@ -169,6 +180,7 @@ export function ProductCosting({
     };
   }, [
     materials,
+    spoilagePercent,
     laborRate,
     laborTime,
     overheadIds,
@@ -242,6 +254,7 @@ export function ProductCosting({
         laborRatePerHour: laborRate !== "" ? parseFloat(laborRate) : null,
         laborTimeMinutes: laborTime !== "" ? parseFloat(laborTime) : null,
         generalExpensesPercent: toNum(generalExpensesPercent),
+        spoilagePercent: toNum(spoilagePercent),
         outputPieces: pieces,
         taxEnabled,
         markupPercent: toNum(markupPercent),
@@ -388,6 +401,33 @@ export function ProductCosting({
                 No inventory items available.
               </p>
             )}
+
+            {/* ── Spoilage % ──────────────────────────────────────── */}
+            <div className="grid grid-cols-2 gap-3 mt-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="spoilage-pct">Spoilage (%)</Label>
+                <Input
+                  id="spoilage-pct"
+                  type="number"
+                  min={0}
+                  step="any"
+                  value={spoilagePercent}
+                  onChange={(e) => setSpoilagePercent(e.target.value)}
+                  placeholder="0"
+                  disabled={!isAdmin}
+                />
+              </div>
+              {calculations.spoilageCost > 0 && (
+                <div className="flex items-end pb-0.5">
+                  <p className="text-xs text-muted-foreground">
+                    Spoilage cost:{" "}
+                    <span className="font-medium text-foreground">
+                      ₱{fmt(calculations.spoilageCost)}
+                    </span>
+                  </p>
+                </div>
+              )}
+            </div>
           </section>
 
           {/* ── Labor ─────────────────────────────────────────────── */}
@@ -568,6 +608,12 @@ export function ProductCosting({
                 label="Material cost / piece"
                 value={`₱${fmt(calculations.materialCostBatch / Math.max(1, Math.floor(toNum(outputPieces)) || 1))}`}
               />
+              {calculations.spoilageCost > 0 && (
+                <CostRow
+                  label="Spoilage / piece"
+                  value={`₱${fmt(calculations.spoilageCost / Math.max(1, Math.floor(toNum(outputPieces)) || 1))}`}
+                />
+              )}
               <CostRow
                 label="Labor cost / piece"
                 value={`₱${fmt(calculations.laborCostBatch / Math.max(1, Math.floor(toNum(outputPieces)) || 1))}`}

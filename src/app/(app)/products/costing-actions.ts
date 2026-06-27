@@ -8,6 +8,7 @@ export interface CostingInput {
   laborRatePerHour: number | null;
   laborTimeMinutes: number | null;
   generalExpensesPercent: number;
+  spoilagePercent: number;
   outputPieces: number;
   taxEnabled: boolean;
   markupPercent: number;
@@ -36,6 +37,7 @@ export async function saveCostingAction(
           laborRatePerHour: input.laborRatePerHour,
           laborTimeMinutes: input.laborTimeMinutes,
           generalExpensesPercent: input.generalExpensesPercent,
+          spoilagePercent: input.spoilagePercent,
           outputPieces: input.outputPieces,
           taxEnabled: input.taxEnabled,
           markupPercent: input.markupPercent,

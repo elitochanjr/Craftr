@@ -53,6 +53,7 @@ export default async function ProductDetailPage({ params }: Props) {
           laborRatePerHour: product.laborRatePerHour,
           laborTimeMinutes: product.laborTimeMinutes,
           generalExpensesPercent: product.generalExpensesPercent,
+          spoilagePercent: Number(product.spoilagePercent),
           outputPieces: product.outputPieces,
           taxEnabled: product.taxEnabled,
           markupPercent: product.markupPercent,
