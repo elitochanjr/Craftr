@@ -177,6 +177,9 @@ model StockMovement {
   projectId String?
   project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
 
+  productionRunId String?
+  productionRun   ProductionRun? @relation(fields: [productionRunId], references: [id], onDelete: SetNull)
+
   createdAt DateTime @default(now())
 }
 
@@ -264,8 +267,9 @@ model Product {
   discountPercent        Float    @default(0)
   finalRetailPrice       Float?
 
-  materials ProductMaterial[]
-  overheads ProductOverhead[]
+  materials      ProductMaterial[]
+  overheads      ProductOverhead[]
+  productionRuns ProductionRun[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -309,6 +313,23 @@ model OverheadItem {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// Production Runs
+// ─────────────────────────────────────────────
+
+model ProductionRun {
+  id             String   @id @default(cuid())
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  date           DateTime @default(now())
+  piecesProduced Float
+  notes          String?
+
+  stockMovements StockMovement[]
+
+  createdAt DateTime @default(now())
 }
 
 // ─────────────────────────────────────────────

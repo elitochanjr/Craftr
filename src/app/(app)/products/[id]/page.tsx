@@ -13,7 +13,7 @@ export default async function ProductDetailPage({ params }: Props) {
   const session = await requireAuth();
   const { id } = await params;
 
-  const [product, items, overheadItems] = await Promise.all([
+  const [product, items, overheadItems, productionRuns] = await Promise.all([
     prisma.product.findUnique({
       where: { id },
       include: {
@@ -37,6 +37,10 @@ export default async function ProductDetailPage({ params }: Props) {
       orderBy: { name: "asc" },
       select: { id: true, name: true, costPerUse: true },
     }),
+    prisma.productionRun.findMany({
+      where: { productId: id },
+      orderBy: { date: "desc" },
+    }),
   ]);
 
   if (!product) notFound();
@@ -46,7 +50,7 @@ export default async function ProductDetailPage({ params }: Props) {
   return (
     <>
       <Header title="Products" />
-      <ProductDetail product={product} role={session.user.role} />
+      <ProductDetail product={product} role={session.user.role} productionRuns={productionRuns} />
       <ProductCosting
         productId={product.id}
         initial={{

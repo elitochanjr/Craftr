@@ -3,12 +3,13 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import type { Product } from "@/generated/prisma/client";
+import type { Product, ProductionRun } from "@/generated/prisma/client";
 import {
   updateProductAction,
   deleteProductAction,
   adjustStockAction,
 } from "@/app/(app)/products/actions";
+import { RecordProductionDialog } from "@/components/products/record-production-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,14 +21,15 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { ChevronRight, Pencil, Trash2, Plus } from "lucide-react";
+import { ChevronRight, Pencil, Trash2, Plus, Factory } from "lucide-react";
 
 interface ProductDetailProps {
   product: Product;
   role: string;
+  productionRuns: ProductionRun[];
 }
 
-export function ProductDetail({ product, role }: ProductDetailProps) {
+export function ProductDetail({ product, role, productionRuns }: ProductDetailProps) {
   const router = useRouter();
   const [, startTransition] = useTransition();
   const isAdmin = role === "ADMIN";
@@ -47,6 +49,9 @@ export function ProductDetail({ product, role }: ProductDetailProps) {
   const [adjusting, setAdjusting] = useState(false);
   const [adjustDelta, setAdjustDelta] = useState("");
   const [adjustError, setAdjustError] = useState<string | null>(null);
+
+  // Record Production state
+  const [productionOpen, setProductionOpen] = useState(false);
 
   function startEdit() {
     setEditForm({
@@ -271,6 +276,53 @@ export function ProductDetail({ product, role }: ProductDetailProps) {
                 )}
               </div>
             )}
+
+            {/* ── Record Production section ──────────────────────── */}
+            {isAdmin && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-medium">Production</h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    onClick={() => setProductionOpen(true)}
+                  >
+                    <Factory className="h-3.5 w-3.5" />
+                    Record production
+                  </Button>
+                </div>
+
+                {/* Production history */}
+                {productionRuns.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No production runs recorded yet.
+                  </p>
+                ) : (
+                  <div className="rounded-lg border border-border divide-y divide-border">
+                    {productionRuns.map((run) => (
+                      <div key={run.id} className="px-4 py-3 flex items-start justify-between gap-4">
+                        <div className="space-y-0.5 min-w-0">
+                          <p className="text-sm font-medium">
+                            {run.piecesProduced} piece{run.piecesProduced !== 1 ? "s" : ""} produced
+                          </p>
+                          {run.notes && (
+                            <p className="text-xs text-muted-foreground truncate">{run.notes}</p>
+                          )}
+                        </div>
+                        <time className="text-xs text-muted-foreground shrink-0">
+                          {new Date(run.date).toLocaleDateString(undefined, {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </time>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </>
         )}
       </div>
@@ -292,6 +344,17 @@ export function ProductDetail({ product, role }: ProductDetailProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Record Production dialog */}
+      {isAdmin && (
+        <RecordProductionDialog
+          productId={product.id}
+          productName={product.name}
+          open={productionOpen}
+          onOpenChange={setProductionOpen}
+          onSuccess={() => router.refresh()}
+        />
+      )}
     </div>
   );
 }
